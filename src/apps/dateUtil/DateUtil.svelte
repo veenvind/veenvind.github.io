@@ -1,17 +1,36 @@
 <script>
-	import Datepicker from 'svelte-calendar';
+	import {onMount} from 'svelte';
+	import {derived} from 'svelte/store';
+	import {Datepicker} from 'svelte-calendar';
 	import daysSince from './daysSince.js';
+
+	const theme = {
+		calendar: {
+			width: '600px',
+			shadow: '0px 0px 5px rgba(0, 0, 0, 0.25)'
+		}
+	};
+
+	const start = new Date('1970-01-01');
+	let store;
 	let selected;
-	$: result = selected ? daysSince(selected.getTime()) : {}
+	onMount(() => {
+		selected = derived(
+			store,
+			$store => $store?.selected ? daysSince($store.selected.getTime()) : {}
+		);
+	});
+
 </script>
 
 <main>
 	<span>Days Since:</span>
-	<Datepicker format={'#{d}/#{m}/#{Y}'} bind:selected/>
-	{#if selected}
+	<Datepicker bind:store {theme} />
+
+	{#if $store?.selected}
 		<table>
-		{#each Object.keys(result) as key}
-			<tr><td>{key}:</td><td>{parseInt(result[key])}</td></tr>
+		{#each Object.keys($selected) as key}
+			<tr><td>{key}:</td><td>{parseInt($selected[key])}</td></tr>
 		{/each}
 		</table>
 	{/if}
@@ -28,6 +47,15 @@
 		main {
 			max-width: none;
 		}
+	}
+	button {
+		background: purple;
+		color: #fff;
+		border: 0;
+		padding: 18px 30px;
+		font-size: 1.2em;
+		border-radius: 6px;
+		cursor: pointer;
 	}
 	table {
 		margin: 40px auto 0;
